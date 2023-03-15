@@ -10,20 +10,29 @@ Builder.load_file('frontend.kv')
 
 class FirstScreen(Screen):
 
-    def search_image(self):
+    def get_image_link(self):
         # Get user query from text input
         user_query = self.manager.current_screen.ids.user_query.text
         # Get wikipedia page and list of image urls
-        page = wikipedia.page(user_query)
+        page = wikipedia.page(user_query, auto_suggest=False)
         image_links = page.images
-        # Download the image
         link = image_links[0]
-        req = requests.get(link)
+        return link
+
+    def download_image(self):
+        link = self.get_image_link()
+        headers = {'User-Agent' : 'photo_searcher_bot/1.0 (eks3333@gmail.com)'}
+        req = requests.get(link, headers=headers)
         image_path = 'files/image.jpg'
         with open(image_path, 'wb') as file:
             file.write(req.content)
+
+        return image_path
+
+    def set_image(self):
+
         # Set the image in the image widget
-        self.manager.current_screen.ids.img.source = image_path
+        self.manager.current_screen.ids.img.source = self.download_image()
 
 
 class RootWidget(ScreenManager):
